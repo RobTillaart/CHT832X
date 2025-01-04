@@ -204,6 +204,7 @@ Other manufacturers may return different number.
 
 #### Should
 
+- clean up COMMANDS magic numbers.
 
 #### Could
 
