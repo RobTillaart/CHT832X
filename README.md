@@ -58,7 +58,7 @@ Pull ups are needed on SDA, SCL.
 
 ## I2C 
 
-### performance
+### Performance
 
 I2C bus speeds is supported up to 1000 KHz (datasheet P4).
 
