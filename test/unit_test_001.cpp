@@ -38,7 +38,7 @@ unittest_teardown()
 
 unittest(test_constants_I)
 {
-  assertEqual(0x40, CHT832X_DEFAULT_ADDRESS);
+  assertEqual(0x44, CHT832X_DEFAULT_ADDRESS);
 
   assertEqual(0,    CHT832X_OK);
   assertEqual(-10,  CHT832X_ERROR_ADDR);
