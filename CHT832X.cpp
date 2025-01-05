@@ -10,7 +10,7 @@
 
 
 //  COMMANDS
-//  TODO magic numbers to descriptive const uint16_t vars.
+//  TODO magic numbers to descriptive const uint16_t variables.
 
 
 /////////////////////////////////////////////////////
@@ -75,7 +75,7 @@ int CHT832X::read()
   int16_t tmp = (data[0] << 8 | data[1]);
   _temperature = -45 + (175.0 / 65535) * tmp;
   //  Handle temperature offset.
-  if (_tempOffset != 0.0) 
+  if (_tempOffset != 0.0)
   {
     _temperature += _tempOffset;
   }

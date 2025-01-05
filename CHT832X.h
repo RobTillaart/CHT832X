@@ -41,7 +41,7 @@ public:
 
 
   //  read both the temperature and humidity.
-  int      read();             //  read T and H from device 
+  int      read();             //  read T and H from device
   uint32_t lastRead();         //  milliSeconds since start sketch
   float    getTemperature();   //  get cached value
   float    getHumidity();      //  get cached value
@@ -68,10 +68,10 @@ public:
 
 
   //  STATUS - datasheet P17
-  // 
+  //
   //  bit 13:   heater status   0 = Heater disabled, 1 = heater enabled
   //  bit  4:   reset detected  0 = no reset, 1 reset since last clearStatus
-  //  bit  1:   command status  0 = executed, 1 = not executed 
+  //  bit  1:   command status  0 = executed, 1 = not executed
   //  bit  0:   checksum        0 = pass, 1 = fail
   //  other :   reserved
   uint16_t getStatusRegister();
@@ -79,6 +79,7 @@ public:
 
 
   //  SOFTWARE RESET
+  //  not tested, to be investigated
   void     softwareReset();
 
 
@@ -93,7 +94,7 @@ private:
   float    _humidity        = 0.0;
   float    _temperature     = 0.0;
   uint32_t _lastRead        = 0;
-  uint32_t _heatStart       = 0;  //  TODO investigate 
+  uint32_t _heatStart       = 0;  //  TODO investigate
 
   TwoWire* _wire;
   uint8_t  _address         = CHT832X_DEFAULT_ADDRESS;

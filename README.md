@@ -18,7 +18,10 @@ Arduino library for CHT832X temperature and humidity sensor.
 
 **EXPERIMENTAL**
 
-This library implements most the functionality of the sensor.
+The CHT8320 and CHT8325 are temperature and relative humidity sensors. 
+They both have the same interface, the CHT8325 is slightly more accurate.
+
+This library implements the most important functionality of the sensor.
 This includes reading the temperature and humidity and the manufacturer-ID register.
 Furthermore one can set an offset for temperature and humidity.
 
@@ -72,13 +75,11 @@ TODO: fill table
 |:---------:|:--------:|:--------:|:----------------:|
 |   0.1.0   |   50000  |          |                  |
 |   0.1.0   |  100000  |          |                  |
-|   0.1.0   |  150000  |          |                  |
 |   0.1.0   |  200000  |          |                  |
-|   0.1.0   |  250000  |          |                  |
 |   0.1.0   |  300000  |          |                  |
 |   0.1.0   |  400000  |          |                  |
-|   0.1.0   |  500000  |          |                  |
 |   0.1.0   |  600000  |          |                  |
+|   0.1.0   |  800000  |          |                  |
 
 
 ### Addresses
@@ -130,13 +131,13 @@ Returns error status.
 
 - **int read()** reads both the temperature and humidity from the sensor.
 Can be called at most once per second, otherwise it will return **CHT832X_ERROR_LASTREAD**
-Return should be tested and be **CHT832X_OK**.
-- **uint32_t lastRead()** returns lastRead in MilliSeconds since start sketch.
+Return value should be tested and be **CHT832X_OK**.
+- **uint32_t lastRead()** returns lastRead in milliSeconds since start sketch.
 Useful to check when it is time to call **read()** again, or for logging.
 - **float getTemperature()** returns last temperature read.
-Will return the same value until **read()** or **readTemperature()** is called again.
+Will return the same value until **read()** is called again.
 - **float getHumidity()** returns last humidity read.
-Will return the same value until **read()** or **readHumidity()** is called again.
+Will return the same value until **read()** is called again.
 
 
 ### Offset
@@ -147,24 +148,44 @@ These are not handled for temperature by the library, humidity is constrained.
   
 - **void setHumidityOffset(float offset)** idem.
 - **void setTemperatureOffset(float offset)** idem.
-This function can be used to set return temperature in Kelvin! offset = 273.15
+This function can be used to set return temperature in Kelvin, with offset = 273.15
 - **float getHumidityOffset()** idem.
 - **float getTemperatureOffset()** idem.
 
 If the offset is not the same over the operational range, 
-consider a mapping function for temperature and humidity.
+consider a mapping function for temperature and/or humidity.
 e.g. https://github.com/RobTillaart/MultiMap
 
+
+### Heater
+
+Check datasheet for details.
+
+The heater can be used to remove condense from the sensor - think humidity.
+It is unclear how long the sensor may be heated. (feedback welcome).
+
+The heater must be disabled when making measurements as the heating 
+affects both the temperature and humidity. 
+Note it might take some time to stabilize to "environment temperature" again.
+
+- **void enableHeater()** switch on.
+- **void enableHeaterFull()** set to full power level.
+- **void enableHeaterHalf()** set to half power level.
+- **void enableHeaterQuarter()** set to quarter power level.
+- **void disableHeater()** switch off.
+
+The status of the heater can be fetched with **getStatusRegister()**.
+see below.
 
 ### Status register
 
 Check datasheet for details.
 
-- **uint16_t getStatusRegister()** See below
-- **voidclearStatusRegister()** idem
+- **uint16_t getStatusRegister()** See the table below.
+- **void clearStatusRegister()** idem.
 
-|  bit  |  name            | description  |
-|:-----:|:----------------:|:-------------|
+|  bit  |  name            |  description  |
+|:-----:|:----------------:|:--------------|
 |   13  |  heater status   |  0 = Heater disabled, 1 = heater enabled
 |    4  |  reset detected  |  0 = no reset, 1 reset since last clearStatus
 |    1  |  command status  |  0 = executed, 1 = not executed 
@@ -174,12 +195,15 @@ Check datasheet for details.
 
 ### SoftwareReset
 
+Check datasheet for details.
+
 - **void softwareReset()** idem.
 
 
 ### Meta data
 
-- **uint16_t getNIST(uint8_t id)** id = 0,1,2; returns 6 bytes of unique ID.
+- **uint16_t getNIST(uint8_t id)** id = 0, 1, 2; returns 6 bytes of unique ID.
+Can be used as a unique identifier for a product.
 - **uint16_t getManufacturer()** Returns 0x5959 according to the datasheet.
 Other manufacturers may return different number.
 
@@ -205,6 +229,8 @@ Other manufacturers may return different number.
 #### Should
 
 - clean up COMMANDS magic numbers.
+- derived classes for CHT8320 and CHT8325 (convenience)
+- investigate missing functions.
 
 #### Could
 

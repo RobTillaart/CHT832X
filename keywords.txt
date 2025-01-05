@@ -29,6 +29,7 @@ getStatusRegister	KEYWORD2
 clearStatusRegister	KEYWORD2
 
 softwareReset	KEYWORD2
+
 getNIST	KEYWORD2
 getManufacturer	KEYWORD2
 
