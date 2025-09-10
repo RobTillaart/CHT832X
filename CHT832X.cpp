@@ -1,7 +1,7 @@
 //
 //    FILE: CHT832X.cpp
 //  AUTHOR: Rob Tillaart
-// VERSION: 0.1.0
+// VERSION: 0.1.1
 // PURPOSE: Arduino library for CHT832X temperature and humidity sensor
 //     URL: https://github.com/RobTillaart/CHT832X
 
@@ -64,7 +64,7 @@ int CHT832X::read()
 
   //  TEMPERATURE PART
   uint8_t data[6] = { 0, 0, 0, 0, 0, 0 };
-  int status = _readRegister(0xE000, data, 6);
+  int status = _readRegister(0xE000, data, 6, 60);
   if (status != CHT832X_OK)
   {
     return status;
@@ -238,7 +238,7 @@ uint16_t CHT832X::getManufacturer()
 //
 //  PRIVATE
 //
-int CHT832X::_readRegister(uint16_t command, uint8_t * buf, uint8_t size)
+int CHT832X::_readRegister(uint16_t command, uint8_t * buf, uint8_t size, uint8_t del)
 {
   _wire->beginTransmission(_address);
   _wire->write(command >> 8);
@@ -248,6 +248,8 @@ int CHT832X::_readRegister(uint16_t command, uint8_t * buf, uint8_t size)
   {
     return CHT832X_ERROR_I2C;
   }
+
+  if (del > 0) delay(del);
 
   n = _wire->requestFrom(_address, size);
   if (n != size)

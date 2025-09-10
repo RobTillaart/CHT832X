@@ -2,7 +2,7 @@
 //
 //    FILE: CHT832X.h
 //  AUTHOR: Rob Tillaart
-// VERSION: 0.1.0
+// VERSION: 0.1.1
 // PURPOSE: Arduino library for CHT832X temperature and humidity sensor
 //     URL: https://github.com/RobTillaart/CHT832X
 //
@@ -60,11 +60,11 @@ public:
   //  use with care
   //  heater must be disabled when making measurements,
   //  max period?
-  void    enableHeater();
-  void    enableHeaterFull();
-  void    enableHeaterHalf();
-  void    enableHeaterQuarter();
-  void    disableHeater();
+  void     enableHeater();
+  void     enableHeaterFull();
+  void     enableHeaterHalf();
+  void     enableHeaterQuarter();
+  void     disableHeater();
 
 
   //  STATUS - datasheet P17
@@ -99,7 +99,7 @@ private:
   TwoWire* _wire;
   uint8_t  _address         = CHT832X_DEFAULT_ADDRESS;
 
-  int      _readRegister(uint16_t command, uint8_t * buf, uint8_t size);
+  int      _readRegister(uint16_t command, uint8_t * buf, uint8_t size, uint8_t del = 0);
   int      _writeRegister(uint16_t command, uint8_t * buf, uint8_t size);
 };
 
