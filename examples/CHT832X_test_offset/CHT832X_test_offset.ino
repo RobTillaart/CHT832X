@@ -6,13 +6,16 @@
 
 //  Always check datasheet for connections
 
+
 #include "CHT832X.h"
 
 CHT832X CHT;
 
+
 void setup()
 {
   Serial.begin(115200);
+  Serial.println();
   Serial.println(__FILE__);
   Serial.print("CHT832X_LIB_VERSION: ");
   Serial.println(CHT832X_LIB_VERSION);
@@ -27,7 +30,7 @@ void setup()
   Serial.println(CHT.getHumidityOffset());
   Serial.println();
 
-  CHT.setTemperatureOffset(+273.15);  //  adjusts temperature to Kelvin 
+  CHT.setTemperatureOffset(+273.15);  //  adjusts temperature to Kelvin
   CHT.setHumidityOffset(-50);         //  extreme just for demo
   delay(1000);
 }
