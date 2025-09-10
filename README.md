@@ -20,6 +20,8 @@ Arduino library for CHT832X temperature and humidity sensor.
 
 The CHT8320 and CHT8325 are temperature and relative humidity sensors. 
 They both have the same interface, the CHT8325 is slightly more accurate.
+The CHT832X are factory calibrated and have an unique NIST number 
+(48 bit) to be globally trackable.
 
 This library implements the most important functionality of the sensor.
 This includes reading the temperature and humidity and the manufacturer-ID register.
@@ -28,7 +30,7 @@ Furthermore one can set an offset for temperature and humidity.
 The API of the library is based upon https://github.com/RobTillaart/CHT8310
 The sensors use a different protocol to communicate.
 
-The library is not tested with hardware yet.
+The library is tested to work with hardware, see issue 3.
 
 Feedback as always is welcome, please share your experiences.
 
@@ -206,6 +208,7 @@ Note it might take some time to stabilize to "environment temperature" again.
 The status of the heater can be fetched with **getStatusRegister()**.
 see below.
 
+
 ### Status register
 
 Check datasheet for details.
@@ -232,7 +235,7 @@ Check datasheet for details.
 ### Meta data
 
 - **uint16_t getNIST(uint8_t id)** id = 0, 1, 2; returns 6 bytes of unique ID.
-Can be used as a unique identifier for a product.
+Can be used as a unique identifier for your product.
 - **uint16_t getManufacturer()** Returns 0x5959 according to the datasheet.
 Other manufacturers may return different number.
 

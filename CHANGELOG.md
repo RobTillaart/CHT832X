@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - add **int getError()**
 - add CRC8 check for receiving data
 - add **CHT832X_ERROR_CRC**
+- add **CHT832X_READ_DELAY** as a configurable const in .h file
 - add constants for the COMMANDS in .cpp (readability)
 - add example CHT832X_crc8_check.ino (debug version).
 - update GitHub actions

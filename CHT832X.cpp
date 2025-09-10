@@ -2,6 +2,7 @@
 //    FILE: CHT832X.cpp
 //  AUTHOR: Rob Tillaart
 // VERSION: 0.2.0
+//    DATE: 2024-12-29
 // PURPOSE: Arduino library for CHT832X temperature and humidity sensor
 //     URL: https://github.com/RobTillaart/CHT832X
 
@@ -23,9 +24,6 @@ const uint16_t CHT832X_CMD_SOFTWARE_RESET    = 0x30A2;
 
 const uint16_t CHT832X_CMD_READ_NIST_BASE    = 0x3683;
 const uint16_t CHT832X_CMD_READ_MANUFACTURER = 0x3781;
-
-//  CONVERSION TIMING
-const uint8_t CHT832X_READ_DELAY = 60;
 
 
 /////////////////////////////////////////////////////
