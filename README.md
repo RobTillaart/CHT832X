@@ -210,13 +210,16 @@ Other manufacturers may return different number.
 
 ## Error codes
 
-|  value  |  define                  |  notes  |
+- **getError()** returns the last error status.
+
+|  value  |  define                  |  notes  |n
 |:-------:|:-------------------------|:--------|
-|     0   |  CHT832X_OK              |
+|     0   |  CHT832X_OK              |  default
 |   -10   |  CHT832X_ERROR_ADDR      |
 |   -11   |  CHT832X_ERROR_I2C       |
 |   -12   |  CHT832X_ERROR_CONNECT   |
 |   -20   |  CHT832X_ERROR_LASTREAD  |
+|   -21   |  CHT832X_ERROR_CRC       |
 
 
 ## Future
@@ -237,10 +240,7 @@ Other manufacturers may return different number.
 - TODO's in code
 - test different platforms
   - AVR, ESP32, ESP8266, STM32, RP2040, ...
-- add CRC checks?
 - improve error handling
-  - **int lastError()**
-  - forward return values
 - add examples
 
 ### Wont

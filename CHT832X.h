@@ -27,7 +27,7 @@
 #define CHT832X_ERROR_I2C                -11
 #define CHT832X_ERROR_CONNECT            -12
 #define CHT832X_ERROR_LASTREAD           -20
-//  #define CHT832X_ERROR_CRC    TODO?
+#define CHT832X_ERROR_CRC                -21
 
 
 class CHT832X
@@ -88,6 +88,9 @@ public:
   uint16_t getManufacturer();    //  expect 0x5959
 
 
+  //  ERROR
+  int      getError();
+
 private:
   float    _humOffset       = 0.0;
   float    _tempOffset      = 0.0;
@@ -95,12 +98,14 @@ private:
   float    _temperature     = 0.0;
   uint32_t _lastRead        = 0;
   uint32_t _heatStart       = 0;  //  TODO investigate
+  int      _error           = CHT832X_OK;
 
   TwoWire* _wire;
   uint8_t  _address         = CHT832X_DEFAULT_ADDRESS;
 
   int      _readRegister(uint16_t command, uint8_t * buf, uint8_t size, uint8_t del = 0);
   int      _writeRegister(uint16_t command, uint8_t * buf, uint8_t size);
+  uint8_t  _crc8(uint16_t data);
 };
 
 
