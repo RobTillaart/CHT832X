@@ -1,7 +1,7 @@
 //
 //    FILE: CHT832X.cpp
 //  AUTHOR: Rob Tillaart
-// VERSION: 0.1.1
+// VERSION: 0.2.0
 // PURPOSE: Arduino library for CHT832X temperature and humidity sensor
 //     URL: https://github.com/RobTillaart/CHT832X
 
@@ -10,7 +10,7 @@
 
 
 //  COMMANDS datasheet  Page 12/13
-const uint16_t CHT832X_CMD_READ              = 0xE000;
+const uint16_t CHT832X_CMD_SINGLE_SHOT       = 0x2400;
 
 const uint16_t CHT832X_CMD_ENABLE_HEATER     = 0x306D;
 const uint16_t CHT832X_CMD_DISABLE_HEATER    = 0x3066;
@@ -47,7 +47,7 @@ int CHT832X::begin()
     _error = CHT832X_ERROR_ADDR;
     return _error;
   }
-  if (! isConnected()) 
+  if (! isConnected())
   {
     _error = CHT832X_ERROR_CONNECT;
     return _error;
@@ -72,25 +72,32 @@ uint8_t CHT832X::getAddress()
 
 ////////////////////////////////////////////////
 //
-//  READ THE SENSOR
+//  READ THE SENSOR - ASYNC INTERFACE
 //
-int CHT832X::read()
+int CHT832X::requestData()
 {
-  //  do not read too fast
-  if (millis() - _lastRead < 1000)
-  {
-    _error = CHT832X_ERROR_LASTREAD;
-    return _error;
-  }
-  _lastRead = millis();
+  _writeCommand(CHT832X_CMD_SINGLE_SHOT);
+  _lastRequest = millis();
+  return _error;
+}
 
-  //  READ PART
+
+bool CHT832X::dataReady()
+{
+  return ((millis() - _lastRequest) > CHT832X_READ_DELAY);
+}
+
+
+int CHT832X::readData()
+{
   uint8_t data[6] = { 0, 0, 0, 0, 0, 0 };
-  _readRegister(CHT832X_CMD_READ, data, 6, CHT832X_READ_DELAY);
+  _readBytes((uint8_t*) data, 6);
   if (_error != CHT832X_OK)
   {
     return _error;
   }
+
+  _lastRead = millis();
 
   //  TEMPERATURE PART
   _error = CHT832X_OK;
@@ -109,9 +116,9 @@ int CHT832X::read()
   }
 
   //  HUMIDITY PART
-  tmp = (data[3] << 8 | data[4]);
-  _humidity = (100.0 / 65535) * tmp;
-  if (_humOffset  != 0.0)
+  uint16_t tmp2 = (data[3] << 8 | data[4]);
+  _humidity = (100.0 / 65535) * tmp2;
+  if (_humOffset != 0.0)
   {
     _humidity += _humOffset;
     //  handle out of range - clipping.
@@ -124,6 +131,37 @@ int CHT832X::read()
     _error = CHT832X_ERROR_CRC;
     //  fall through as value might be correct.
   }
+  return _error;
+}
+
+
+////////////////////////////////////////////////
+//
+//  READ THE SENSOR - SYNC INTERFACE
+//
+int CHT832X::read()
+{
+  //  do not read too fast
+  if (millis() - _lastRead < 1000)
+  {
+    _error = CHT832X_ERROR_LASTREAD;
+    return _error;
+  }
+
+  if (requestData() != CHT832X_OK)
+  {
+    return _error;
+  }
+  while (dataReady() == false)
+  {
+    yield();
+    delay(1);
+  }
+  if (readData() != CHT832X_OK)
+  {
+    return _error;
+  }
+  _error = CHT832X_OK;
   return _error;
 }
 
@@ -180,36 +218,35 @@ float CHT832X::getTemperatureOffset()
 //
 void CHT832X::enableHeater()
 {
-  _writeRegister(CHT832X_CMD_ENABLE_HEATER, NULL, 0);
+  _writeCommand(CHT832X_CMD_ENABLE_HEATER);
 }
 
 
 void CHT832X::enableHeaterFull()
 {
   uint8_t buffer[3] = {0x3F, 0xFF, 0x06};
-  _writeRegister(CHT832X_CMD_CONFIG_HEATER, buffer, 3);
+  _writeCommand(CHT832X_CMD_CONFIG_HEATER, buffer, 3);
 }
 
 
 void CHT832X::enableHeaterHalf()
 {
   uint8_t buffer[3] = {0x03, 0xFF, 0x00};
-  _writeRegister(CHT832X_CMD_CONFIG_HEATER, buffer, 3);
+  _writeCommand(CHT832X_CMD_CONFIG_HEATER, buffer, 3);
 }
 
 
 void CHT832X::enableHeaterQuarter()
 {
   uint8_t buffer[3] = {0x00, 0x9F, 0x96};
-  _writeRegister(CHT832X_CMD_CONFIG_HEATER, buffer, 3);
+  _writeCommand(CHT832X_CMD_CONFIG_HEATER, buffer, 3);
 }
 
 
 void CHT832X::disableHeater()
 {
- _writeRegister(CHT832X_CMD_DISABLE_HEATER, NULL, 0);
+  _writeCommand(CHT832X_CMD_DISABLE_HEATER);
 }
-
 
 
 ////////////////////////////////////////////////
@@ -219,10 +256,10 @@ void CHT832X::disableHeater()
 uint16_t CHT832X::getStatusRegister()
 {
   uint8_t buffer[3] = {0, 0, 0};
-  _readRegister(CHT832X_CMD_READ_STATUS, buffer, 3);
+  _writeCommand(CHT832X_CMD_READ_STATUS);
+  _readBytes(buffer, 3);
   uint16_t value = buffer[0] * 256 + buffer[1];
   //  check CRC.
-  _error = CHT832X_OK;
   if (_crc8(value) != buffer[2])
   {
     _error = CHT832X_ERROR_CRC;
@@ -236,7 +273,7 @@ uint16_t CHT832X::getStatusRegister()
 
 void CHT832X::clearStatusRegister()
 {
-  _writeRegister(CHT832X_CMD_CLEAR_STATUS, NULL, 0);
+  _writeCommand(CHT832X_CMD_CLEAR_STATUS);
 }
 
 
@@ -246,7 +283,7 @@ void CHT832X::clearStatusRegister()
 //
 void CHT832X::softwareReset()
 {
-  _writeRegister(CHT832X_CMD_SOFTWARE_RESET, NULL, 0);
+  _writeCommand(CHT832X_CMD_SOFTWARE_RESET);
 }
 
 
@@ -258,7 +295,8 @@ uint16_t CHT832X::getNIST(uint8_t id)
 {
   if (id > 2) return 0;
   uint8_t buffer[3] = {0, 0, 0};
-  _readRegister(CHT832X_CMD_READ_NIST_BASE + id, buffer, 3);
+  _writeCommand(CHT832X_CMD_READ_NIST_BASE + id);
+  _readBytes(buffer, 3);
   uint16_t value = buffer[0] * 256 + buffer[1];
   //  check CRC.
   _error = CHT832X_OK;
@@ -272,8 +310,9 @@ uint16_t CHT832X::getNIST(uint8_t id)
 
 uint16_t CHT832X::getManufacturer()
 {
-  uint8_t buffer[3] = {0, 0};
-  _readRegister(CHT832X_CMD_READ_MANUFACTURER, buffer, 3);
+  uint8_t buffer[3] = {0, 0, 0};
+  _writeCommand(CHT832X_CMD_READ_MANUFACTURER);
+  _readBytes(buffer, 3);
   uint16_t value = buffer[0] * 256 + buffer[1];
   //  check CRC.
   _error = CHT832X_OK;
@@ -298,11 +337,15 @@ int CHT832X::getError()
 //
 //  PRIVATE
 //
-int CHT832X::_readRegister(uint16_t command, uint8_t * buf, uint8_t size, uint8_t del)
+int CHT832X::_writeCommand(uint16_t command, uint8_t * buffer, uint8_t size)
 {
   _wire->beginTransmission(_address);
   _wire->write(command >> 8);
   _wire->write(command & 0xFF);
+  for (uint8_t i = 0; i < size; i++)
+  {
+    _wire->write(buffer[i]);
+  }
   int n = _wire->endTransmission();
   if (n != 0)
   {
@@ -310,10 +353,14 @@ int CHT832X::_readRegister(uint16_t command, uint8_t * buf, uint8_t size, uint8_
     _error = CHT832X_ERROR_I2C;
     return _error;
   }
+  _error = CHT832X_OK;
+  return _error;
+}
 
-  if (del > 0) delay(del);
 
-  n = _wire->requestFrom(_address, size);
+int CHT832X::_readBytes(uint8_t * buffer, uint8_t size)
+{
+  int n = _wire->requestFrom(_address, size);
   if (n != size)
   {
     _error = CHT832X_ERROR_I2C;
@@ -322,28 +369,7 @@ int CHT832X::_readRegister(uint16_t command, uint8_t * buf, uint8_t size, uint8_
 
   for (uint8_t i = 0; i < size; i++)
   {
-    buf[i] = _wire->read();
-  }
-  _error = CHT832X_OK;
-  return _error;
-}
-
-
-int CHT832X::_writeRegister(uint16_t command, uint8_t * buf, uint8_t size)
-{
-  _wire->beginTransmission(_address);
-  _wire->write(command >> 8);
-  _wire->write(command & 0xFF);
-  for (uint8_t i = 0; i < size; i++)
-  {
-    _wire->write(buf[i]);
-  }
-  int n = _wire->endTransmission();
-  if (n != 0)
-  {
-    //  Serial.println(n);
-    _error = CHT832X_ERROR_I2C;
-    return _error;
+    buffer[i] = _wire->read();
   }
   _error = CHT832X_OK;
   return _error;

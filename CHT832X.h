@@ -2,7 +2,7 @@
 //
 //    FILE: CHT832X.h
 //  AUTHOR: Rob Tillaart
-// VERSION: 0.1.1
+// VERSION: 0.2.0
 // PURPOSE: Arduino library for CHT832X temperature and humidity sensor
 //     URL: https://github.com/RobTillaart/CHT832X
 //
@@ -12,7 +12,7 @@
 #include "Wire.h"
 
 
-#define CHT832X_LIB_VERSION              (F("0.1.0"))
+#define CHT832X_LIB_VERSION              (F("0.2.0"))
 
 
 //  DEFAULT ADDRESS
@@ -39,13 +39,18 @@ public:
   bool     isConnected();
   uint8_t  getAddress();
 
+  //  ASYNC INTERFACE
+  int      requestData();   //  triggers single shot conversion
+  bool     dataReady();     //  conversion ready
+  int      readData();      //  fetch T + H
 
-  //  read both the temperature and humidity.
-  int      read();             //  read T and H from device
+  //  SYNC INTERFACE
+  int      read();             //  read T and H from device; blocks 60 ms.
   uint32_t lastRead();         //  milliSeconds since start sketch
+
+  //  ACCESS last read TEMP + HUM
   float    getTemperature();   //  get cached value
   float    getHumidity();      //  get cached value
-
 
   //  adding offsets works well in normal range
   //  might introduce under- or overflow at the ends of the sensor range
@@ -53,7 +58,6 @@ public:
   void     setTemperatureOffset(float offset);
   float    getHumidityOffset();
   float    getTemperatureOffset();
-
 
   //  HEATER - datasheet P16/17
   //  not tested, to be investigated
@@ -66,7 +70,6 @@ public:
   void     enableHeaterQuarter();
   void     disableHeater();
 
-
   //  STATUS - datasheet P17
   //
   //  bit 13:   heater status   0 = Heater disabled, 1 = heater enabled
@@ -77,16 +80,13 @@ public:
   uint16_t getStatusRegister();
   void     clearStatusRegister();
 
-
   //  SOFTWARE RESET
   //  not tested, to be investigated
   void     softwareReset();
 
-
   //  META DATA
   uint16_t getNIST(uint8_t id);  //  id = 0,1,2
   uint16_t getManufacturer();    //  expect 0x5959
-
 
   //  ERROR
   int      getError();
@@ -97,14 +97,18 @@ private:
   float    _humidity        = 0.0;
   float    _temperature     = 0.0;
   uint32_t _lastRead        = 0;
+  uint32_t _lastRequest     = 0;
   uint32_t _heatStart       = 0;  //  TODO investigate
   int      _error           = CHT832X_OK;
 
   TwoWire* _wire;
   uint8_t  _address         = CHT832X_DEFAULT_ADDRESS;
 
-  int      _readRegister(uint16_t command, uint8_t * buf, uint8_t size, uint8_t del = 0);
-  int      _writeRegister(uint16_t command, uint8_t * buf, uint8_t size);
+
+  int      _writeCommand(uint16_t command, uint8_t * buffer = NULL, uint8_t size = 0);
+  int      _readBytes(uint8_t * buffer, uint8_t size);
+
+
   uint8_t  _crc8(uint16_t data);
 };
 
