@@ -139,10 +139,20 @@ Returns error status.
 
 ### Asynchronous interface
 
+- **int requestData()** triggers a new single shot conversion.
+- **bool dataReady()** checks if 60 milliseconds have passed
+since last request, indicating conversion ready
+- **int readData()** read the raw data, convert to T & H and
+store them in cache until next readData() call.
 
+The ASYNC interface will be extended when other acquisition modi
+are supported. There is continuous modes that work differently.
 
 
 ### Synchronous interface
+
+Note: the read() call wraps the ASYNC interface in a blocking call
+which lasts for 60 milliseconds.
 
 - **int read()** reads both the temperature and humidity from the sensor.
 Can be called at most once per second, otherwise it will return **CHT832X_ERROR_LASTREAD**
