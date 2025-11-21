@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [0.3.1] - 2025-11-21
 - fix #7, update readme.md about **getNIST()**
 - add **CHT8320** and **CHT8325** as derived classes (convenience).
+- add example CHT832X_plotter.ino
 - minor edits
 
 ## [0.3.0] - 2025-10-03
